@@ -125,6 +125,8 @@ def tw_scrape(tweet_id, url):
             capture_output=True, text=True, timeout=30
         )
         if result.returncode != 0:
+            if 'No video could be found' in (result.stderr or ''):
+                return None, 'This tweet has no video — for images, use the TweetGet extension or save them directly.'
             return None, 'Could not fetch tweet. Make sure it is a public tweet.'
 
         # Multi-video tweets make yt-dlp emit one JSON object per video
@@ -206,7 +208,10 @@ def do_download(job_id, url, title, fmt):
         _set_job(job_id, {'progress': 85})
 
         if result.returncode != 0:
-            _set_job(job_id, {'status': 'error', 'error': 'Download failed. Tweet may be private or contain no media.'}); return
+            msg = ('This tweet has no video — for images, use the TweetGet extension or save them directly.'
+                   if 'No video could be found' in (result.stderr or '')
+                   else 'Download failed. Tweet may be private or contain no media.')
+            _set_job(job_id, {'status': 'error', 'error': msg}); return
 
         ext       = 'mp3' if fmt == 'mp3' else 'mp4'
         out_path  = os.path.join(DOWNLOAD_DIR, f'{file_id}.{ext}')
