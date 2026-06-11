@@ -1,0 +1,860 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>TweetGet — Twitter/X Video Downloader</title>
+    <meta
+      name="description"
+      content="Download Twitter and X videos, GIFs instantly. Free, fast, no signup required."
+    />
+    <meta property="og:title" content="TweetGet — Twitter/X Downloader" />
+    <meta
+      property="og:description"
+      content="Download Twitter/X videos and GIFs instantly."
+    />
+    <meta property="og:type" content="website" />
+    <meta name="twitter:card" content="summary" />
+    <link rel="manifest" href="/manifest.json" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+      html {
+        font-size: 16px;
+        scroll-behavior: smooth;
+        -webkit-text-size-adjust: 100%;
+      }
+
+      :root {
+        --bg: #0a0a0a;
+        --surface: #111111;
+        --surface2: #181818;
+        --surface3: #222222;
+        --border: #2c2c2c;
+        --border2: #3c3c3c;
+        --p1: #1d9bf0;
+        --p2: #0d7cc7;
+        --p3: #7856ff;
+        --success: #10b981;
+        --danger: #ef4444;
+        --text: #f5f5f5;
+        --text2: #aaaaaa;
+        --muted: #555555;
+        --radius: 18px;
+        --radius-sm: 12px;
+        --max-w: 680px;
+      }
+
+      body {
+        font-family: "Plus Jakarta Sans", system-ui, sans-serif;
+        background: var(--bg);
+        color: var(--text);
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+        -webkit-font-smoothing: antialiased;
+      }
+
+      body::before {
+        content: "";
+        position: fixed;
+        inset: 0;
+        background-image:
+          linear-gradient(rgba(29, 155, 240, 0.025) 1px, transparent 1px),
+          linear-gradient(90deg, rgba(120, 86, 255, 0.018) 1px, transparent 1px);
+        background-size: 44px 44px;
+        pointer-events: none;
+        z-index: 0;
+      }
+
+      body::after {
+        content: "";
+        position: fixed;
+        top: -20%;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 860px;
+        height: 560px;
+        background: radial-gradient(
+          ellipse,
+          rgba(29, 155, 240, 0.1) 0%,
+          transparent 65%
+        );
+        pointer-events: none;
+        z-index: 0;
+      }
+
+      header,
+      main,
+      footer {
+        position: relative;
+        z-index: 1;
+      }
+
+      header {
+        padding: clamp(10px, 2vw, 18px) 16px 0;
+        text-align: center;
+      }
+
+      .logo {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        text-decoration: none;
+      }
+
+      .logo-icon {
+        width: 36px;
+        height: 36px;
+        background: linear-gradient(135deg, var(--p1), var(--p3));
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.1rem;
+        color: #fff;
+        box-shadow: 0 4px 16px rgba(29, 155, 240, 0.4);
+        flex-shrink: 0;
+      }
+
+      .logo-text {
+        font-size: clamp(1.1rem, 3vw, 1.4rem);
+        font-weight: 900;
+        letter-spacing: -0.04em;
+        color: var(--text);
+      }
+
+      .logo-text span {
+        background: linear-gradient(135deg, var(--p1), var(--p3));
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+      }
+
+      nav {
+        display: flex;
+        justify-content: center;
+        gap: 6px;
+        padding: 14px 16px 0;
+        flex-wrap: wrap;
+      }
+
+      .nav-pill {
+        font-size: 0.78rem;
+        font-weight: 600;
+        color: var(--text2);
+        background: var(--surface2);
+        border: 1px solid var(--border);
+        border-radius: 100px;
+        padding: 5px 14px;
+        cursor: pointer;
+        transition: all 0.18s;
+      }
+      .nav-pill:hover,
+      .nav-pill.active {
+        background: var(--p1);
+        color: #fff;
+        border-color: var(--p1);
+      }
+
+      main {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 32px 16px 40px;
+        gap: 24px;
+        max-width: var(--max-w);
+        margin: 0 auto;
+        width: 100%;
+      }
+
+      .hero {
+        text-align: center;
+      }
+
+      .hero h1 {
+        font-size: clamp(1.7rem, 5vw, 2.6rem);
+        font-weight: 900;
+        letter-spacing: -0.04em;
+        line-height: 1.15;
+        margin-bottom: 10px;
+      }
+
+      .hero h1 em {
+        font-style: normal;
+        background: linear-gradient(135deg, var(--p1), var(--p3));
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+      }
+
+      .hero p {
+        font-size: clamp(0.88rem, 2.5vw, 1rem);
+        color: var(--text2);
+        line-height: 1.6;
+      }
+
+      /* ── Input card ── */
+      .card {
+        width: 100%;
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        padding: 20px;
+        display: flex;
+        flex-direction: column;
+        gap: 14px;
+      }
+
+      .input-row {
+        display: flex;
+        gap: 10px;
+      }
+
+      .url-input {
+        flex: 1;
+        min-width: 0;
+        background: var(--surface2);
+        border: 1.5px solid var(--border2);
+        border-radius: var(--radius-sm);
+        color: var(--text);
+        font-family: inherit;
+        font-size: 0.95rem;
+        padding: 13px 16px;
+        outline: none;
+        transition: border-color 0.2s;
+      }
+      .url-input::placeholder {
+        color: var(--muted);
+      }
+      .url-input:focus {
+        border-color: var(--p1);
+        box-shadow: 0 0 0 3px rgba(29, 155, 240, 0.15);
+      }
+
+      .paste-btn {
+        background: var(--surface3);
+        border: 1.5px solid var(--border2);
+        border-radius: var(--radius-sm);
+        color: var(--text2);
+        font-family: inherit;
+        font-size: 0.85rem;
+        font-weight: 600;
+        padding: 0 16px;
+        cursor: pointer;
+        white-space: nowrap;
+        transition: all 0.18s;
+        flex-shrink: 0;
+      }
+      .paste-btn:hover {
+        border-color: var(--p1);
+        color: var(--p1);
+      }
+
+      .format-row {
+        display: flex;
+        gap: 8px;
+      }
+
+      .fmt-btn {
+        flex: 1;
+        padding: 9px 8px;
+        background: var(--surface2);
+        border: 1.5px solid var(--border);
+        border-radius: var(--radius-sm);
+        color: var(--text2);
+        font-family: inherit;
+        font-size: 0.82rem;
+        font-weight: 700;
+        cursor: pointer;
+        transition: all 0.18s;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 5px;
+      }
+      .fmt-btn.active,
+      .fmt-btn:hover {
+        border-color: var(--p1);
+        color: var(--p1);
+        background: rgba(29, 155, 240, 0.07);
+      }
+
+      .fetch-btn {
+        width: 100%;
+        padding: 14px;
+        background: linear-gradient(135deg, var(--p1), var(--p2));
+        border: none;
+        border-radius: var(--radius-sm);
+        color: #fff;
+        font-family: inherit;
+        font-size: 1rem;
+        font-weight: 800;
+        cursor: pointer;
+        transition:
+          opacity 0.18s,
+          transform 0.12s;
+        letter-spacing: -0.01em;
+      }
+      .fetch-btn:hover {
+        opacity: 0.9;
+      }
+      .fetch-btn:active {
+        transform: scale(0.98);
+      }
+      .fetch-btn:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+      }
+
+      /* ── Result card ── */
+      .result-card {
+        width: 100%;
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        overflow: hidden;
+        display: none;
+      }
+
+      .result-thumb-wrap {
+        position: relative;
+        width: 100%;
+        background: #000;
+      }
+      .result-thumb {
+        width: 100%;
+        max-height: 300px;
+        object-fit: contain;
+        display: block;
+      }
+      .play-overlay {
+        position: absolute;
+        inset: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        pointer-events: none;
+      }
+      .play-circle {
+        width: 52px;
+        height: 52px;
+        background: rgba(0, 0, 0, 0.55);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.4rem;
+      }
+
+      .result-info {
+        padding: 16px 18px;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      }
+
+      .result-title {
+        font-size: 0.95rem;
+        font-weight: 700;
+        line-height: 1.4;
+        color: var(--text);
+        display: -webkit-box;
+        -webkit-line-clamp: 3;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+      }
+
+      .result-meta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+
+      .meta-chip {
+        font-size: 0.75rem;
+        font-weight: 600;
+        color: var(--text2);
+        background: var(--surface2);
+        border: 1px solid var(--border);
+        border-radius: 100px;
+        padding: 4px 10px;
+      }
+
+      .dl-btn {
+        width: 100%;
+        padding: 13px;
+        background: linear-gradient(135deg, var(--p1), var(--p2));
+        border: none;
+        border-radius: var(--radius-sm);
+        color: #fff;
+        font-family: inherit;
+        font-size: 0.95rem;
+        font-weight: 800;
+        cursor: pointer;
+        transition:
+          opacity 0.18s,
+          transform 0.12s;
+      }
+      .dl-btn:hover {
+        opacity: 0.9;
+      }
+      .dl-btn:active {
+        transform: scale(0.98);
+      }
+      .dl-btn:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+      }
+
+      /* ── Progress ── */
+      .progress-wrap {
+        display: none;
+        flex-direction: column;
+        gap: 8px;
+      }
+      .progress-bar-bg {
+        width: 100%;
+        height: 6px;
+        background: var(--surface3);
+        border-radius: 100px;
+        overflow: hidden;
+      }
+      .progress-bar {
+        height: 100%;
+        background: linear-gradient(90deg, var(--p1), var(--p3));
+        border-radius: 100px;
+        transition: width 0.3s ease;
+        width: 0%;
+      }
+      .progress-label {
+        font-size: 0.8rem;
+        color: var(--text2);
+        font-weight: 600;
+        text-align: center;
+      }
+
+      /* ── Error ── */
+      .error-box {
+        display: none;
+        background: rgba(239, 68, 68, 0.1);
+        border: 1px solid rgba(239, 68, 68, 0.3);
+        border-radius: var(--radius-sm);
+        padding: 12px 16px;
+        font-size: 0.88rem;
+        color: #fca5a5;
+        font-weight: 600;
+      }
+
+      /* ── Entrance animations ── */
+      @keyframes fadeUp {
+        from {
+          opacity: 0;
+          transform: translateY(16px);
+        }
+        to {
+          opacity: 1;
+          transform: none;
+        }
+      }
+      .hero {
+        animation: fadeUp 0.55s ease both;
+      }
+      .card {
+        animation: fadeUp 0.55s 0.07s ease both;
+      }
+
+      /* ── Developer credit ── */
+      .dev-credit {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        background: linear-gradient(135deg, var(--surface2), var(--surface3));
+        border: 1px solid var(--border2);
+        border-radius: 100px;
+        padding: 9px 9px 9px 16px;
+        text-decoration: none;
+        color: var(--text);
+        font-weight: 700;
+        font-size: 0.86rem;
+        box-shadow: 0 6px 22px rgba(0, 0, 0, 0.45);
+        transition:
+          transform 0.22s ease,
+          border-color 0.22s ease,
+          box-shadow 0.22s ease;
+      }
+      .dev-credit:hover {
+        transform: translateY(-2px);
+        border-color: var(--p1);
+        box-shadow: 0 10px 30px rgba(29, 155, 240, 0.3);
+      }
+      .dev-ar {
+        direction: rtl;
+        font-weight: 700;
+        color: var(--text2);
+      }
+      .dev-handle {
+        background: linear-gradient(135deg, var(--p1), var(--p3));
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        font-weight: 900;
+        direction: ltr;
+        display: inline-block;
+      }
+      .dev-x {
+        width: 30px;
+        height: 30px;
+        flex-shrink: 0;
+        background: linear-gradient(135deg, var(--p1), var(--p3));
+        border-radius: 9px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #fff;
+        box-shadow: 0 3px 12px rgba(29, 155, 240, 0.4);
+      }
+
+      /* ── Footer ── */
+      footer {
+        text-align: center;
+        padding: 28px 16px 36px;
+        font-size: 0.78rem;
+        color: var(--muted);
+        position: relative;
+        z-index: 1;
+        animation: fadeUp 0.55s 0.14s ease both;
+      }
+      .foot-note {
+        margin-top: 14px;
+        font-size: 0.74rem;
+        color: var(--muted);
+        direction: rtl;
+      }
+
+      .spinner {
+        display: inline-block;
+        width: 16px;
+        height: 16px;
+        border: 2px solid rgba(255, 255, 255, 0.3);
+        border-top-color: #fff;
+        border-radius: 50%;
+        animation: spin 0.7s linear infinite;
+        vertical-align: middle;
+        margin-right: 6px;
+      }
+      @keyframes spin {
+        to {
+          transform: rotate(360deg);
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <a class="logo" href="/">
+        <div class="logo-icon">𝕏</div>
+        <div class="logo-text">Tweet<span>Get</span></div>
+      </a>
+      <nav>
+        <button class="nav-pill active">Twitter / X</button>
+        <button
+          class="nav-pill"
+          onclick="
+            window.location.href =
+              'https://sunny-creation-production-05bc.up.railway.app'
+          "
+        >
+          Instagram
+        </button>
+      </nav>
+    </header>
+
+    <main>
+      <div class="hero">
+        <h1>Download <em>Twitter & X</em><br />Videos Instantly</h1>
+        <p>
+          Paste any tweet link — get your video or GIF in seconds.<br />Free,
+          fast, no account needed.
+        </p>
+      </div>
+
+      <!-- Input card -->
+      <div class="card">
+        <div class="input-row">
+          <input
+            class="url-input"
+            id="urlInput"
+            type="url"
+            placeholder="https://twitter.com/user/status/..."
+            autocomplete="off"
+          />
+          <button class="paste-btn" onclick="pasteUrl()">Paste</button>
+        </div>
+
+        <div class="format-row">
+          <button class="fmt-btn active" id="fmtMp4" onclick="setFmt('mp4')">
+            🎬 MP4 Video
+          </button>
+          <button class="fmt-btn" id="fmtMp3" onclick="setFmt('mp3')">
+            🎵 MP3 Audio
+          </button>
+        </div>
+
+        <div class="error-box" id="errorBox"></div>
+
+        <button class="fetch-btn" id="fetchBtn" onclick="fetchInfo()">
+          Get Tweet
+        </button>
+      </div>
+
+      <!-- Result card -->
+      <div class="result-card" id="resultCard">
+        <div class="result-thumb-wrap" id="thumbWrap" style="display: none">
+          <img class="result-thumb" id="thumbImg" src="" alt="thumbnail" />
+          <div class="play-overlay" id="playOverlay" style="display: none">
+            <div class="play-circle">▶</div>
+          </div>
+        </div>
+        <div class="result-info">
+          <div class="result-title" id="resultTitle"></div>
+          <div class="result-meta" id="resultMeta"></div>
+          <div class="progress-wrap" id="progressWrap">
+            <div class="progress-bar-bg">
+              <div class="progress-bar" id="progressBar"></div>
+            </div>
+            <div class="progress-label" id="progressLabel">Preparing…</div>
+          </div>
+          <button class="dl-btn" id="dlBtn" onclick="startDownload()">
+            ⬇ Download
+          </button>
+        </div>
+      </div>
+    </main>
+
+    <footer>
+      <a
+        class="dev-credit"
+        href="https://x.com/KhaledQ84Ever"
+        target="_blank"
+        rel="noopener noreferrer"
+        aria-label="تطوير وبرمجة بواسطة خالد — @KhaledQ84Ever على منصة X"
+      >
+        <span class="dev-x" aria-hidden="true">
+          <svg viewBox="0 0 24 24" width="17" height="17" fill="currentColor">
+            <path
+              d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"
+            ></path>
+          </svg>
+        </span>
+        <span class="dev-ar">
+          تطوير وبرمجة بواسطة
+          <span class="dev-handle">@KhaledQ84Ever</span>
+        </span>
+      </a>
+      <div class="foot-note">
+        © 2026 TweetGet · للاستخدام الشخصي فقط · يحترم المحتوى العام فقط
+      </div>
+    </footer>
+
+    <script>
+      let currentFmt = "mp4";
+      let currentInfo = null;
+      let pollTimer = null;
+
+      function setFmt(f) {
+        currentFmt = f;
+        document
+          .getElementById("fmtMp4")
+          .classList.toggle("active", f === "mp4");
+        document
+          .getElementById("fmtMp3")
+          .classList.toggle("active", f === "mp3");
+      }
+
+      async function pasteUrl() {
+        try {
+          const t = await navigator.clipboard.readText();
+          document.getElementById("urlInput").value = t.trim();
+        } catch {
+          document.getElementById("urlInput").focus();
+        }
+      }
+
+      function showError(msg) {
+        const b = document.getElementById("errorBox");
+        b.textContent = msg;
+        b.style.display = "block";
+      }
+      function clearError() {
+        document.getElementById("errorBox").style.display = "none";
+      }
+
+      function fmtDuration(s) {
+        if (!s) return null;
+        const m = Math.floor(s / 60),
+          sec = Math.floor(s % 60);
+        return `${m}:${sec.toString().padStart(2, "0")}`;
+      }
+
+      async function fetchInfo() {
+        clearError();
+        const url = document.getElementById("urlInput").value.trim();
+        if (!url) {
+          showError("Please paste a Twitter/X URL first.");
+          return;
+        }
+
+        const btn = document.getElementById("fetchBtn");
+        btn.disabled = true;
+        btn.innerHTML = '<span class="spinner"></span>Fetching…';
+        document.getElementById("resultCard").style.display = "none";
+
+        try {
+          const r = await fetch("/info", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ url }),
+          });
+          const data = await r.json();
+          if (!r.ok || data.error) {
+            showError(data.error || "Could not fetch tweet.");
+            return;
+          }
+
+          currentInfo = data;
+
+          document.getElementById("resultTitle").textContent =
+            data.title || "Twitter Video";
+
+          const meta = document.getElementById("resultMeta");
+          meta.innerHTML = "";
+          if (data.uploader)
+            meta.innerHTML += `<span class="meta-chip">@${data.uploader}</span>`;
+          if (data.duration && data.duration !== "—")
+            meta.innerHTML += `<span class="meta-chip">⏱ ${data.duration}</span>`;
+          meta.innerHTML += `<span class="meta-chip">${data.is_video ? "🎬 Video" : "🖼 Image"}</span>`;
+
+          const tw = document.getElementById("thumbWrap");
+          if (data.thumbnail) {
+            document.getElementById("thumbImg").src = data.thumbnail;
+            tw.style.display = "block";
+            document.getElementById("playOverlay").style.display = data.is_video
+              ? "flex"
+              : "none";
+          } else {
+            tw.style.display = "none";
+          }
+
+          document.getElementById("progressWrap").style.display = "none";
+          document.getElementById("dlBtn").disabled = false;
+          document.getElementById("dlBtn").textContent = "⬇ Download";
+          document.getElementById("resultCard").style.display = "block";
+        } catch {
+          showError("Network error. Please try again.");
+        } finally {
+          btn.disabled = false;
+          btn.textContent = "Get Tweet";
+        }
+      }
+
+      async function startDownload() {
+        if (!currentInfo) return;
+        clearError();
+
+        const dlBtn = document.getElementById("dlBtn");
+        dlBtn.disabled = true;
+        dlBtn.innerHTML = '<span class="spinner"></span>Converting…';
+
+        const pw = document.getElementById("progressWrap");
+        pw.style.display = "flex";
+        setProgress(5, "Starting…");
+
+        try {
+          const r = await fetch("/start", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              url: currentInfo.url,
+              title: currentInfo.title,
+              format: currentFmt,
+            }),
+          });
+          const data = await r.json();
+          if (!r.ok || data.error) {
+            showError(data.error || "Failed to start.");
+            resetDlBtn();
+            return;
+          }
+
+          pollStatus(data.job_id);
+        } catch {
+          showError("Network error. Please try again.");
+          resetDlBtn();
+        }
+      }
+
+      function setProgress(pct, label) {
+        document.getElementById("progressBar").style.width = pct + "%";
+        document.getElementById("progressLabel").textContent = label;
+      }
+
+      function pollStatus(jobId) {
+        if (pollTimer) clearInterval(pollTimer);
+        pollTimer = setInterval(async () => {
+          try {
+            const r = await fetch(`/status/${jobId}`);
+            const data = await r.json();
+
+            if (data.status === "processing" || data.status === "pending") {
+              const pct = data.progress || 0;
+              setProgress(
+                pct,
+                pct < 30
+                  ? "Fetching…"
+                  : pct < 80
+                    ? "Downloading…"
+                    : "Finalizing…",
+              );
+            } else if (data.status === "done") {
+              clearInterval(pollTimer);
+              setProgress(100, "Done! Starting download…");
+              setTimeout(() => {
+                window.location.href = `/download/${jobId}`;
+              }, 600);
+              setTimeout(resetDlBtn, 2000);
+            } else if (data.status === "error") {
+              clearInterval(pollTimer);
+              showError(data.error || "Download failed.");
+              resetDlBtn();
+            }
+          } catch {
+            clearInterval(pollTimer);
+            showError("Connection lost. Please try again.");
+            resetDlBtn();
+          }
+        }, 1200);
+      }
+
+      function resetDlBtn() {
+        const dlBtn = document.getElementById("dlBtn");
+        dlBtn.disabled = false;
+        dlBtn.textContent = "⬇ Download";
+        document.getElementById("progressWrap").style.display = "none";
+      }
+
+      document.getElementById("urlInput").addEventListener("keydown", (e) => {
+        if (e.key === "Enter") fetchInfo();
+      });
+    </script>
+  </body>
+</html>
