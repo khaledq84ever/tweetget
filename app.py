@@ -204,7 +204,7 @@ def do_download(job_id, url, title, fmt):
             cmd = [ytdlp, '-f', 'bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]/best',
                    '-o', out_tmpl, '--no-playlist', '--playlist-items', '1', url]
 
-        result = subprocess.run(cmd, capture_output=True, text=True, timeout=180)
+        result = subprocess.run(cmd, capture_output=True, text=True, timeout=300)
         _set_job(job_id, {'progress': 85})
 
         if result.returncode != 0:
