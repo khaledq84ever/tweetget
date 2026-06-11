@@ -192,12 +192,15 @@ def do_download(job_id, url, title, fmt):
 
         _set_job(job_id, {'progress': 15})
 
+        # --playlist-items 1: multi-video tweets are exposed as a playlist; all
+        # entries would write to the same template, so grab the first one only
+        # (deterministic, no wasted bandwidth).
         if fmt == 'mp3':
             cmd = [ytdlp, '-x', '--audio-format', 'mp3', '-o', out_tmpl,
-                   '--no-playlist', url]
+                   '--no-playlist', '--playlist-items', '1', url]
         else:
             cmd = [ytdlp, '-f', 'bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]/best',
-                   '-o', out_tmpl, '--no-playlist', url]
+                   '-o', out_tmpl, '--no-playlist', '--playlist-items', '1', url]
 
         result = subprocess.run(cmd, capture_output=True, text=True, timeout=180)
         _set_job(job_id, {'progress': 85})
