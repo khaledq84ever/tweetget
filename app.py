@@ -276,7 +276,26 @@ def manifest():
 
 @app.route('/robots.txt')
 def robots():
-    return 'User-agent: *\nAllow: /\n', 200, {'Content-Type': 'text/plain'}
+    body = ('User-agent: *\n'
+            'Allow: /\n\n'
+            'Sitemap: https://tweetget-production.up.railway.app/sitemap.xml\n')
+    return body, 200, {'Content-Type': 'text/plain'}
+
+@app.route('/sitemap.xml')
+def sitemap():
+    today = time.strftime('%Y-%m-%d')
+    xml = (
+        '<?xml version="1.0" encoding="UTF-8"?>\n'
+        '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
+        '  <url>\n'
+        '    <loc>https://tweetget-production.up.railway.app/</loc>\n'
+        f'    <lastmod>{today}</lastmod>\n'
+        '    <changefreq>weekly</changefreq>\n'
+        '    <priority>1.0</priority>\n'
+        '  </url>\n'
+        '</urlset>\n'
+    )
+    return xml, 200, {'Content-Type': 'application/xml'}
 
 @app.route('/info', methods=['POST'])
 def get_info():
