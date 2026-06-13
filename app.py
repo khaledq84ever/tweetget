@@ -25,6 +25,7 @@ jobs        = {}
 jobs_lock   = threading.Lock()
 _rate_store = defaultdict(list)
 _rate_lock  = threading.Lock()
+_last_rate_prune = 0.0
 
 _HEADERS = {
     'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 '
@@ -267,8 +268,13 @@ def do_download(job_id, url, title, fmt):
 # ── Rate limiter ──────────────────────────────────────────────────────────────
 
 def _check_rate(ip):
+    global _last_rate_prune
     now = time.time()
     with _rate_lock:
+        if now - _last_rate_prune > 300:  # evict IPs with no hits in last 60s so the dict stays bounded
+            for k in [k for k, ts in _rate_store.items() if not any(now - t < 60 for t in ts)]:
+                del _rate_store[k]
+            _last_rate_prune = now
         _rate_store[ip] = [t for t in _rate_store[ip] if now - t < 60]
         if len(_rate_store[ip]) >= RATE_LIMIT: return False
         _rate_store[ip].append(now)
