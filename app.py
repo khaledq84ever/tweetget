@@ -1,6 +1,8 @@
 from flask import Flask, request, jsonify, send_file, render_template
 from flask_cors import CORS
 import os, uuid, json, re, glob, threading, time, shutil, subprocess
+import socket, ipaddress
+from urllib.parse import urlparse as _urlparse
 import requests as req_lib
 from collections import defaultdict
 
@@ -75,8 +77,34 @@ _TW_RE = re.compile(
     r'(?:twitter\.com|x\.com)/\w+/status/(\d+)',
     re.IGNORECASE)
 
+_TW_DOMAINS = ('twitter.com', 'x.com')
+
+def _host_is_allowed(url, domains):
+    """Host must be exactly one of `domains` or a subdomain, over http(s). Closes the
+    SSRF where the allowlist regex matched the domain inside a path/query of an
+    attacker- or internal-pointing URL (e.g. http://169.254.169.254/x.com/i/status/1)."""
+    try:
+        p = _urlparse(url)
+    except Exception:
+        return False
+    if p.scheme not in ('http', 'https'):
+        return False
+    host = (p.hostname or '').rstrip('.').lower()
+    if not any(host == d or host.endswith('.' + d) for d in domains):
+        return False
+    try:  # defense in depth: reject hosts that resolve to non-public IPs
+        for info in socket.getaddrinfo(host, None):
+            ip = ipaddress.ip_address(info[4][0])
+            if (ip.is_private or ip.is_loopback or ip.is_link_local
+                    or ip.is_reserved or ip.is_multicast or ip.is_unspecified):
+                return False
+    except Exception:
+        pass
+    return True
+
 def is_valid_url(url):
-    return bool(_TW_RE.search(url))
+    u = url if url.startswith('http') else 'https://' + url
+    return _host_is_allowed(u, _TW_DOMAINS) and bool(_TW_RE.search(url))
 
 def extract_tweet_id(url):
     m = _TW_RE.search(url)
