@@ -382,14 +382,21 @@ def start_convert():
                      args=(job_id, url, title or None, fmt), daemon=True).start()
     return jsonify({'job_id': job_id})
 
-@app.route('/status/<job_id>')
-def get_status(job_id):
+def _get_job(job_id):
+    # Jobs run in one gunicorn worker; the other worker's in-memory copy goes
+    # stale at "processing" forever. Re-read disk until the job is terminal.
     with jobs_lock:
         job = jobs.get(job_id)
-    if not job:
-        job = _load_job_from_disk(job_id)
-        if job:
+    if not job or job.get('status') not in ('done', 'error'):
+        disk = _load_job_from_disk(job_id)
+        if disk:
+            job = disk
             with jobs_lock: jobs[job_id] = job
+    return job
+
+@app.route('/status/<job_id>')
+def get_status(job_id):
+    job = _get_job(job_id)
     if not job:
         return jsonify({'error': 'Job not found'}), 404
     return jsonify({k: job.get(k) for k in ('status', 'error', 'filename', 'progress')})
@@ -397,12 +404,7 @@ def get_status(job_id):
 @app.route('/download/<job_id>')
 @app.route('/download/<job_id>/<path:_fname>')
 def download_file(job_id, _fname=None):
-    with jobs_lock:
-        job = jobs.get(job_id)
-    if not job:
-        job = _load_job_from_disk(job_id)
-        if job:
-            with jobs_lock: jobs[job_id] = job
+    job = _get_job(job_id)
     if not job or job['status'] != 'done':
         return jsonify({'error': 'File not ready — please try again.'}), 404
     path, filename = job['file'], job['filename']
