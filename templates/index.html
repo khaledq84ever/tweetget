@@ -774,11 +774,15 @@
 
           const meta = document.getElementById("resultMeta");
           meta.innerHTML = "";
-          if (data.uploader)
-            meta.innerHTML += `<span class="meta-chip">@${data.uploader}</span>`;
-          if (data.duration && data.duration !== "—")
-            meta.innerHTML += `<span class="meta-chip">⏱ ${data.duration}</span>`;
-          meta.innerHTML += `<span class="meta-chip">${data.is_video ? "🎬 Video" : "🖼 Image"}</span>`;
+          const addChip = (text) => {
+            const chip = document.createElement("span");
+            chip.className = "meta-chip";
+            chip.textContent = text;
+            meta.appendChild(chip);
+          };
+          if (data.uploader) addChip(`@${data.uploader}`);
+          if (data.duration && data.duration !== "—") addChip(`⏱ ${data.duration}`);
+          addChip(data.is_video ? "🎬 Video" : "🖼 Image");
 
           const tw = document.getElementById("thumbWrap");
           if (data.thumbnail) {
