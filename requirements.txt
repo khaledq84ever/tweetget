@@ -1,6 +1,6 @@
 flask
 flask-cors
 requests
-yt-dlp>=2026.07.04
+yt-dlp[default] @ git+https://github.com/yt-dlp/yt-dlp.git@master
 static-ffmpeg
 gunicorn

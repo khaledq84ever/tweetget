@@ -149,10 +149,19 @@ def tw_scrape(tweet_id, url):
         return None, 'yt-dlp not found on server.'
 
     try:
-        result = subprocess.run(
-            [ytdlp, '--dump-json', '--no-playlist', url],
-            capture_output=True, text=True, timeout=30
-        )
+        result = None
+        for attempt in range(2):
+            result = subprocess.run(
+                [ytdlp, '--dump-json', '--no-playlist', url],
+                capture_output=True, text=True, timeout=30
+            )
+            # X's syndication API exhausts its guest-token pool under load;
+            # it self-recovers within a couple seconds, so retry once.
+            if result.returncode != 0 and 'All sources are busy' in (result.stderr or '') and attempt == 0:
+                time.sleep(3)
+                continue
+            break
+
         if result.returncode != 0:
             if 'No video could be found' in (result.stderr or ''):
                 return None, 'This tweet has no video — for images, use the TweetGet extension or save them directly.'
@@ -234,6 +243,9 @@ def do_download(job_id, url, title, fmt):
                    '-o', out_tmpl, '--no-playlist', '--playlist-items', '1', url]
 
         result = subprocess.run(cmd, capture_output=True, text=True, timeout=300)
+        if result.returncode != 0 and 'All sources are busy' in (result.stderr or ''):
+            time.sleep(3)
+            result = subprocess.run(cmd, capture_output=True, text=True, timeout=300)
         _set_job(job_id, {'progress': 85})
 
         if result.returncode != 0:
