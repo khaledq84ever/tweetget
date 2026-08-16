@@ -150,15 +150,16 @@ def tw_scrape(tweet_id, url):
 
     try:
         result = None
-        for attempt in range(2):
+        backoffs = [3, 6]
+        for attempt in range(len(backoffs) + 1):
             result = subprocess.run(
                 [ytdlp, '--dump-json', '--no-playlist', url],
                 capture_output=True, text=True, timeout=30
             )
-            # X's syndication API exhausts its guest-token pool under load;
-            # it self-recovers within a couple seconds, so retry once.
-            if result.returncode != 0 and 'All sources are busy' in (result.stderr or '') and attempt == 0:
-                time.sleep(3)
+            # X's guest-token pool exhausts under load (common on shared cloud
+            # egress IPs); it self-recovers within seconds, so retry with backoff.
+            if result.returncode != 0 and 'All sources are busy' in (result.stderr or '') and attempt < len(backoffs):
+                time.sleep(backoffs[attempt])
                 continue
             break
 
@@ -243,9 +244,12 @@ def do_download(job_id, url, title, fmt):
                    '-o', out_tmpl, '--no-playlist', '--playlist-items', '1', url]
 
         result = subprocess.run(cmd, capture_output=True, text=True, timeout=300)
-        if result.returncode != 0 and 'All sources are busy' in (result.stderr or ''):
-            time.sleep(3)
-            result = subprocess.run(cmd, capture_output=True, text=True, timeout=300)
+        for backoff in (3, 6):
+            if result.returncode != 0 and 'All sources are busy' in (result.stderr or ''):
+                time.sleep(backoff)
+                result = subprocess.run(cmd, capture_output=True, text=True, timeout=300)
+            else:
+                break
         _set_job(job_id, {'progress': 85})
 
         if result.returncode != 0:
