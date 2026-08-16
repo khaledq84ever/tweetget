@@ -1,6 +1,6 @@
 flask
 flask-cors
 requests
-yt-dlp
+yt-dlp>=2026.07.04
 static-ffmpeg
 gunicorn
