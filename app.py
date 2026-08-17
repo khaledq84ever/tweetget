@@ -131,6 +131,28 @@ def _find_ffmpeg():
     nix = glob.glob('/nix/store/*/bin/ffmpeg')
     return nix[0] if nix else None
 
+
+# Errors yt-dlp raises for a tweet that will NEVER succeed on retry (deleted,
+# private, no media, age-gated). Everything else (guest-token exhaustion, HTTP
+# 429/5xx, connection resets — all common on shared cloud-provider egress IPs)
+# is treated as transient and retried. Older code matched the literal string
+# 'All sources are busy', which does not appear anywhere in yt-dlp's source
+# (verified against the pinned @master build) — so retries never actually
+# fired and every transient failure surfaced immediately as a hard error.
+_PERMANENT_ERROR_MARKERS = (
+    'No video could be found',
+    'Requested tweet is unavailable',
+    'NSFW tweet requires authentication',
+    'account is not available',
+    'suspended',
+)
+
+def _is_transient_error(stderr):
+    stderr = stderr or ''
+    if not stderr.strip():
+        return False
+    return not any(marker in stderr for marker in _PERMANENT_ERROR_MARKERS)
+
 def _find_ytdlp():
     p = shutil.which('yt-dlp')
     if p: return p
@@ -158,7 +180,7 @@ def tw_scrape(tweet_id, url):
             )
             # X's guest-token pool exhausts under load (common on shared cloud
             # egress IPs); it self-recovers within seconds, so retry with backoff.
-            if result.returncode != 0 and 'All sources are busy' in (result.stderr or '') and attempt < len(backoffs):
+            if result.returncode != 0 and _is_transient_error(result.stderr) and attempt < len(backoffs):
                 time.sleep(backoffs[attempt])
                 continue
             break
@@ -245,7 +267,7 @@ def do_download(job_id, url, title, fmt):
 
         result = subprocess.run(cmd, capture_output=True, text=True, timeout=300)
         for backoff in (3, 6, 12, 20):
-            if result.returncode != 0 and 'All sources are busy' in (result.stderr or ''):
+            if result.returncode != 0 and _is_transient_error(result.stderr):
                 time.sleep(backoff)
                 result = subprocess.run(cmd, capture_output=True, text=True, timeout=300)
             else:
