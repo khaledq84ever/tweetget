@@ -150,7 +150,7 @@ def tw_scrape(tweet_id, url):
 
     try:
         result = None
-        backoffs = [3, 6]
+        backoffs = [3, 6, 12, 20]
         for attempt in range(len(backoffs) + 1):
             result = subprocess.run(
                 [ytdlp, '--dump-json', '--no-playlist', url],
@@ -244,7 +244,7 @@ def do_download(job_id, url, title, fmt):
                    '-o', out_tmpl, '--no-playlist', '--playlist-items', '1', url]
 
         result = subprocess.run(cmd, capture_output=True, text=True, timeout=300)
-        for backoff in (3, 6):
+        for backoff in (3, 6, 12, 20):
             if result.returncode != 0 and 'All sources are busy' in (result.stderr or ''):
                 time.sleep(backoff)
                 result = subprocess.run(cmd, capture_output=True, text=True, timeout=300)
