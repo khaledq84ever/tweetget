@@ -1,0 +1,6 @@
+[2026-08-19 18:02:53 +0000] [2425478] [INFO] Starting gunicorn 26.1.0
+[2026-08-19 18:02:53 +0000] [2425478] [INFO] Listening at: http://0.0.0.0:4426 (2425478)
+[2026-08-19 18:02:53 +0000] [2425478] [INFO] Using worker: sync
+[2026-08-19 18:02:53 +0000] [2425482] [INFO] Booting worker with pid: 2425482
+[2026-08-19 18:02:53 +0000] [2425483] [INFO] Booting worker with pid: 2425483
+[2026-08-19 18:02:53 +0000] [2425478] [INFO] Control socket listening at /home/khaled/.gunicorn/gunicorn.ctl
