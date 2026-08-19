@@ -1,6 +1,6 @@
 flask
 flask-cors
 requests
-yt-dlp[default] @ git+https://github.com/yt-dlp/yt-dlp.git@master
+yt-dlp[default] @ https://github.com/yt-dlp/yt-dlp/archive/refs/heads/master.tar.gz
 static-ffmpeg
 gunicorn
