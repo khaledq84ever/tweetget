@@ -154,3 +154,15 @@
 [2026-08-22 17:32:33 +0000] [3824423] [INFO] Booting worker with pid: 3824423
 [2026-08-22 17:32:33 +0000] [3824424] [INFO] Booting worker with pid: 3824424
 [2026-08-22 17:32:34 +0000] [3824419] [INFO] Control socket listening at /home/khaled/.gunicorn/gunicorn.ctl
+[2026-08-22 18:03:49 +0000] [3835532] [INFO] Starting gunicorn 26.1.0
+[2026-08-22 18:03:49 +0000] [3835532] [INFO] Listening at: http://0.0.0.0:4426 (3835532)
+[2026-08-22 18:03:49 +0000] [3835532] [INFO] Using worker: sync
+[2026-08-22 18:03:49 +0000] [3835536] [INFO] Booting worker with pid: 3835536
+[2026-08-22 18:03:49 +0000] [3835537] [INFO] Booting worker with pid: 3835537
+[2026-08-22 18:03:49 +0000] [3835532] [INFO] Control socket listening at /home/khaled/.gunicorn/gunicorn.ctl
+[2026-08-22 18:03:52 +0000] [3835552] [INFO] Starting gunicorn 26.1.0
+[2026-08-22 18:03:52 +0000] [3835552] [INFO] Listening at: http://0.0.0.0:4426 (3835552)
+[2026-08-22 18:03:52 +0000] [3835552] [INFO] Using worker: sync
+[2026-08-22 18:03:52 +0000] [3835556] [INFO] Booting worker with pid: 3835556
+[2026-08-22 18:03:52 +0000] [3835557] [INFO] Booting worker with pid: 3835557
+[2026-08-22 18:03:52 +0000] [3835552] [INFO] Control socket listening at /home/khaled/.gunicorn/gunicorn.ctl
