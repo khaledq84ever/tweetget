@@ -1,3 +1,5 @@
+# cache-bust 2026-08-22: force fresh yt-dlp master pull, unpinned URL alone doesn't
+# invalidate the build-layer cache since this file's bytes are what's hashed
 flask
 flask-cors
 requests
