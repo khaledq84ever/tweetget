@@ -275,3 +275,9 @@ tweetget up on 4426
 [2026-08-23 12:12:06 +0000] [25155] [INFO] Booting worker with pid: 25155
 [2026-08-23 12:12:06 +0000] [25156] [INFO] Booting worker with pid: 25156
 [2026-08-23 12:12:06 +0000] [25151] [INFO] Control socket listening at /home/khaled/.gunicorn/gunicorn.ctl
+[2026-08-23 14:33:30 +0000] [84516] [INFO] Starting gunicorn 26.1.0
+[2026-08-23 14:33:30 +0000] [84516] [INFO] Listening at: http://0.0.0.0:4426 (84516)
+[2026-08-23 14:33:30 +0000] [84516] [INFO] Using worker: sync
+[2026-08-23 14:33:30 +0000] [84521] [INFO] Booting worker with pid: 84521
+[2026-08-23 14:33:30 +0000] [84522] [INFO] Booting worker with pid: 84522
+[2026-08-23 14:33:30 +0000] [84516] [INFO] Control socket listening at /home/khaled/.gunicorn/gunicorn.ctl
