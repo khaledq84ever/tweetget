@@ -244,3 +244,9 @@
 [2026-08-23 05:31:28 +0000] [4076812] [INFO] Booting worker with pid: 4076812
 [2026-08-23 05:31:28 +0000] [4076813] [INFO] Booting worker with pid: 4076813
 [2026-08-23 05:31:28 +0000] [4076808] [INFO] Control socket listening at /home/khaled/.gunicorn/gunicorn.ctl
+[2026-08-23 07:31:20 +0000] [4118109] [INFO] Starting gunicorn 26.1.0
+[2026-08-23 07:31:20 +0000] [4118109] [INFO] Listening at: http://0.0.0.0:4426 (4118109)
+[2026-08-23 07:31:20 +0000] [4118109] [INFO] Using worker: sync
+[2026-08-23 07:31:20 +0000] [4118113] [INFO] Booting worker with pid: 4118113
+[2026-08-23 07:31:20 +0000] [4118114] [INFO] Booting worker with pid: 4118114
+[2026-08-23 07:31:21 +0000] [4118109] [INFO] Control socket listening at /home/khaled/.gunicorn/gunicorn.ctl
