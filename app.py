@@ -125,7 +125,8 @@ def make_filename(title, ext='mp4'):
 def _find_ffmpeg():
     p = shutil.which('ffmpeg')
     if p: return p
-    for d in ['/nix/var/nix/profiles/default/bin', '/usr/bin', '/usr/local/bin']:
+    for d in [os.path.expanduser('~/bin'), '/nix/var/nix/profiles/default/bin',
+              '/usr/bin', '/usr/local/bin']:
         fp = os.path.join(d, 'ffmpeg')
         if os.path.isfile(fp): return fp
     nix = glob.glob('/nix/store/*/bin/ffmpeg')
@@ -156,8 +157,8 @@ def _is_transient_error(stderr):
 def _find_ytdlp():
     p = shutil.which('yt-dlp')
     if p: return p
-    for d in ['/nix/var/nix/profiles/default/bin', '/usr/bin', '/usr/local/bin',
-              os.path.expanduser('~/.local/bin')]:
+    for d in [os.path.expanduser('~/bin'), '/nix/var/nix/profiles/default/bin',
+              '/usr/bin', '/usr/local/bin', os.path.expanduser('~/.local/bin')]:
         fp = os.path.join(d, 'yt-dlp')
         if os.path.isfile(fp): return fp
     return None
@@ -255,15 +256,21 @@ def do_download(job_id, url, title, fmt):
 
         _set_job(job_id, {'progress': 15})
 
+        # ffmpeg is needed to mux bestvideo+bestaudio (mp4) or extract audio
+        # (mp3); yt-dlp otherwise relies on finding it on PATH, which the
+        # cron-launched server process doesn't have set to include ~/bin.
+        ffmpeg = _find_ffmpeg()
+        ffmpeg_args = ['--ffmpeg-location', ffmpeg] if ffmpeg else []
+
         # --playlist-items 1: multi-video tweets are exposed as a playlist; all
         # entries would write to the same template, so grab the first one only
         # (deterministic, no wasted bandwidth).
         if fmt == 'mp3':
             cmd = [ytdlp, '-x', '--audio-format', 'mp3', '-o', out_tmpl,
-                   '--no-playlist', '--playlist-items', '1', url]
+                   '--no-playlist', '--playlist-items', '1', *ffmpeg_args, url]
         else:
             cmd = [ytdlp, '-f', 'bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]/best',
-                   '-o', out_tmpl, '--no-playlist', '--playlist-items', '1', url]
+                   '-o', out_tmpl, '--no-playlist', '--playlist-items', '1', *ffmpeg_args, url]
 
         result = subprocess.run(cmd, capture_output=True, text=True, timeout=300)
         for backoff in (3, 6, 12, 20):
